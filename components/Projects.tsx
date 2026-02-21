@@ -36,7 +36,17 @@ function ProjectCard({ project, onAskQuestion }: ProjectCardProps) {
           >
             <Sparkles className="w-5 h-5" style={{ color: project.accentColor }} />
           </div>
-          <ExternalLink className="w-4 h-4 text-slate-600 dark:text-slate-600 mt-1" />
+          {project.url && (
+            <a
+              href={project.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="mt-1 text-slate-400 hover:text-white transition-colors duration-150"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          )}
         </div>
 
         <h3 className="font-bold text-slate-900 dark:text-white text-base mb-2 leading-snug">

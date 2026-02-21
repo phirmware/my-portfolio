@@ -59,13 +59,15 @@ Beyond the core platform work, he has also been working on AI-powered tooling: b
 
 ---
 
-## The Startup Chapter — Three Years Building in Production
+## Clouddley — Co-Founder and CTO
 
-One of Chibuzor's proudest — and most formative — experiences is a startup he co-founded with a friend. The product was a platform that automated application deployments to users' VPS servers, with features including team management, granular access controls and permissions, custom domain integration, and custom reverse proxy configuration. Think a self-hosted, infrastructure-agnostic deployment platform.
+One of Chibuzor's proudest — and most formative — experiences is co-founding Clouddley (clouddley.com), a self-hosted Platform-as-a-Service with the tagline "Deploy anywhere. Own everything." He served as CTO, owning the entire technical architecture and vision.
 
-This was not a side project or an MVP that never shipped — it ran in production for three years with real paying customers. He and his co-founder handled everything: product decisions, engineering trade-offs, customer conversations, feature prioritisation, managing a small engineering team, and the relentless reality of running a business.
+Clouddley enables developers and engineering teams to deploy applications, databases, and AI workloads to their own VPS with zero-downtime deployments, one-click provisioning of databases (PostgreSQL, MySQL, MongoDB, Redis, NATS, RabbitMQ), managed SSL, DDoS protection, secret management, and built-in load balancing — without requiring DevOps expertise. The platform supports multi-cloud flexibility across providers, avoiding vendor lock-in. Features include automatic rollback, Slack/Email/Telegram/WhatsApp deployment notifications, and Git integration with Dockerfile support.
 
-They ultimately shut it down when they did not achieve the growth trajectory they were aiming for. But Chibuzor does not measure its success by that outcome. Building and running a product end-to-end for three years taught him lessons about engineering trade-offs, business thinking, and technical leadership that no corporate role could replicate. It is the experience that fundamentally shaped how he evaluates technical decisions — always with an eye on business impact, not just technical elegance.
+Clouddley v2 is live and running in production with real users. The platform targets SaaS developers and engineering teams from MVPs through to products serving millions of users — essentially giving teams the ease of Heroku or Railway while keeping full infrastructure ownership.
+
+This was not a side project. Running Clouddley as CTO meant handling everything: product strategy, engineering trade-offs, customer conversations, feature prioritisation, managing engineers, and the relentless reality of running a business. It shaped how Chibuzor evaluates technical decisions — always with an eye on business impact, not just technical elegance.
 
 ---
 
@@ -116,6 +118,30 @@ He is open to remote and hybrid roles. He is based in Leicester, UK and is a UK 
 - **Observability:** Datadog APM, CloudWatch, Prometheus, Grafana, PagerDuty
 - **CI/CD:** GitHub Actions, GitLab CI, Bitbucket Pipelines, Travis CI
 - **Architecture:** Microservices, Event-Driven Architecture, Domain-Driven Design, REST, GraphQL, Serverless, OAuth 2.0
+
+---
+
+## Open Source Projects
+
+### RAGBench — RAG Evaluation Framework
+
+RAGBench (github.com/phirmware/ragbench) is an open-source benchmarking framework Chibuzor built to rigorously evaluate and compare RAG pipeline quality. A core frustration in the LLM engineering space is that most people eyeball RAG quality — they ask a few questions and call it good. RAGBench brings real rigour to the process.
+
+The framework uses the Vectara Open RAGBench dataset, which consists of 397 arXiv scientific papers and 3,045 real-world questions, as the evaluation corpus. It evaluates pipelines on standard information retrieval metrics: MRR (Mean Reciprocal Rank), nDCG (Normalised Discounted Cumulative Gain), Recall@K, and Precision@K. It supports multiple embedding providers — OpenAI API and Ollama models (nomic-embed-text, embeddinggemma, qwen3) — and implements semantic chunking based on sentence similarity.
+
+The interactive dashboard lets you compare evaluation runs side-by-side and filter by query characteristics, making it easy to understand where a pipeline performs well and where it degrades. A quick-test mode using a 100-question subset enables faster iteration during development. The project demonstrates Chibuzor's approach to AI engineering: not just building RAG pipelines, but building the tooling to know whether they actually work.
+
+Tech stack: Node.js, TypeScript, Qdrant (vector database), Express.js, OpenAI API, Ollama.
+
+### i-human — Cognitive Memory CLI
+
+i-human (github.com/phirmware/i-human) is a local-first agentic CLI that models how human memory actually works, built in TypeScript. It was born from Chibuzor's curiosity about memory architecture in agentic AI systems — most AI assistants have a flat, undifferentiated context window, but human cognition is layered, selective, and lossy in specific ways.
+
+i-human simulates three memory layers: working memory (the active conversation context), short-term memory (recent interactions, decaying over time), and long-term memory (consolidated, salient information that persists across sessions). Vector embeddings and semantic search power memory retrieval — when you say something in a new conversation, relevant memories from past sessions are surfaced automatically.
+
+The system implements salience-based memory decay (not all memories are equal — frequently accessed or emotionally significant ones persist longer) and automatic consolidation (short-term memories that meet a salience threshold are promoted to long-term). Append-only Markdown audit logs make the memory lifecycle transparent. The architecture is pluggable — it works with both OpenAI (cloud) and Ollama (local, privacy-preserving).
+
+Tech stack: TypeScript (strict, ESM), OpenAI SDK, Ollama, SQLite (WAL mode via better-sqlite3), text-embedding-3-small, Vitest.
 
 ---
 
