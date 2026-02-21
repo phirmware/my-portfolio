@@ -2,15 +2,15 @@
  * Seed Script — semantic chunking + vector embedding pipeline
  *
  * Reads knowledge-base.md, splits it into semantic chunks, embeds each chunk
- * using OpenAI text-embedding-3-small, and stores everything in SQLite.
+ * using OpenAI text-embedding-3-small, and stores everything in a JSON file.
  *
  * Run:  npm run seed
- * Auto: runs as "prebuild" so Vercel always has a fresh db on deploy.
+ * Auto: runs as "prebuild" but skips if data/embeddings.json already exists
+ *       (so Vercel uses the committed file without calling OpenAI at build time).
  *
  * Requires OPENAI_API_KEY in .env.local (or environment).
  */
 
-import Database from 'better-sqlite3'
 import path from 'path'
 import fs from 'fs'
 import OpenAI from 'openai'
@@ -29,37 +29,23 @@ if (fs.existsSync(envPath)) {
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 const DATA_DIR = path.join(process.cwd(), 'data')
-const DB_PATH = path.join(DATA_DIR, 'portfolio.db')
+const JSON_PATH = path.join(DATA_DIR, 'embeddings.json')
 const KB_PATH = path.join(process.cwd(), 'knowledge-base.md')
 
-// ---- Embedding model config ----
 const EMBED_MODEL = 'text-embedding-3-small'
 const EMBED_DIMS = 1536
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true })
 
-// ---- SQLite setup ----
-const db = new Database(DB_PATH)
-
-db.exec(`
-  DROP TABLE IF EXISTS documents;
-
-  CREATE TABLE documents (
-    id        INTEGER PRIMARY KEY AUTOINCREMENT,
-    section   TEXT    NOT NULL,
-    title     TEXT    NOT NULL,
-    content   TEXT    NOT NULL,
-    embedding BLOB    NOT NULL  -- Float32Array stored as raw bytes
-  );
-`)
-
-const insertDoc = db.prepare(
-  'INSERT INTO documents (section, title, content, embedding) VALUES (@section, @title, @content, @embedding)'
-)
+// Skip if already seeded — lets Vercel use the committed file without
+// needing OPENAI_API_KEY at build time.
+if (fs.existsSync(JSON_PATH)) {
+  const existing = JSON.parse(fs.readFileSync(JSON_PATH, 'utf-8')) as unknown[]
+  console.log(`✅  ${existing.length} chunks already in embeddings.json — skipping seed.`)
+  process.exit(0)
+}
 
 // ---- Semantic chunker ----
-// Strategy: split on h2/h3 markdown headings, keeping each heading + its body
-// as one chunk. Then further split any chunk over MAX_CHARS into paragraphs.
 const MAX_CHARS = 1200
 
 interface Chunk {
@@ -79,21 +65,16 @@ function chunkMarkdown(markdown: string): Chunk[] {
     const headingLine = lines[0] ?? ''
     const body = lines.slice(1).join('\n').trim()
 
-    // Extract section name from heading
     const headingMatch = headingLine.match(/^#{1,3}\s+(.+)/)
-    if (!headingMatch) continue // skip front-matter / non-heading blocks
+    if (!headingMatch) continue
 
     const heading = headingMatch[1].trim()
-
-    // Derive a top-level section label from the heading for filtering
     const sectionLabel = deriveSection(heading)
-
     const fullChunk = `${heading}\n\n${body}`
 
     if (fullChunk.length <= MAX_CHARS) {
       chunks.push({ section: sectionLabel, title: heading, content: fullChunk })
     } else {
-      // Split long chunk into paragraph-level sub-chunks
       const paragraphs = body.split(/\n\n+/)
       let buffer = heading + '\n\n'
 
@@ -131,7 +112,7 @@ function deriveSection(heading: string): string {
   return 'about'
 }
 
-// ---- Embed a batch of texts (max 100 per request) ----
+// ---- Embed a batch of texts ----
 async function embedBatch(texts: string[]): Promise<Float32Array[]> {
   const response = await openai.embeddings.create({
     model: EMBED_MODEL,
@@ -141,11 +122,6 @@ async function embedBatch(texts: string[]): Promise<Float32Array[]> {
   return response.data
     .sort((a, b) => a.index - b.index)
     .map(item => new Float32Array(item.embedding))
-}
-
-// ---- Convert Float32Array ↔ Buffer for SQLite BLOB storage ----
-function float32ToBuffer(arr: Float32Array): Buffer {
-  return Buffer.from(arr.buffer)
 }
 
 // ---- Main ----
@@ -159,7 +135,6 @@ async function main() {
 
   console.log(`🔢  Embedding with ${EMBED_MODEL}...`)
 
-  // Embed in batches of 50 to stay well within API limits
   const BATCH = 50
   const allEmbeddings: Float32Array[] = []
 
@@ -172,22 +147,17 @@ async function main() {
   }
   console.log()
 
-  console.log('💾  Writing to SQLite...')
-  const insertMany = db.transaction(() => {
-    for (let i = 0; i < chunks.length; i++) {
-      insertDoc.run({
-        section: chunks[i].section,
-        title: chunks[i].title,
-        content: chunks[i].content,
-        embedding: float32ToBuffer(allEmbeddings[i]),
-      })
-    }
-  })
-  insertMany()
+  console.log('💾  Writing embeddings.json...')
+  const documents = chunks.map((chunk, i) => ({
+    id: i + 1,
+    section: chunk.section,
+    title: chunk.title,
+    content: chunk.content,
+    embedding: Array.from(allEmbeddings[i]),
+  }))
 
-  const count = (db.prepare('SELECT COUNT(*) as n FROM documents').get() as { n: number }).n
-  console.log(`✅  Seeded ${count} chunks into ${DB_PATH}`)
-  db.close()
+  fs.writeFileSync(JSON_PATH, JSON.stringify(documents))
+  console.log(`✅  Saved ${documents.length} chunks to ${JSON_PATH}`)
 }
 
 main().catch(err => {
