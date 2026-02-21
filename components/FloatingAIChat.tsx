@@ -97,7 +97,7 @@ function TypingDots() {
 }
 
 function RateLimitedInput({ secondsLeft }: { secondsLeft: number }) {
-  const progress = ((60 - secondsLeft) / 60) * 100
+  const progress = ((300 - secondsLeft) / 300) * 100
 
   return (
     <motion.div
@@ -116,7 +116,11 @@ function RateLimitedInput({ secondsLeft }: { secondsLeft: number }) {
       <p className="text-xs text-slate-400 leading-relaxed">
         <span className="text-white font-semibold">Whoa, easy there!</span> Even AI assistants need
         a breather after {MAX_QUESTIONS} questions. I&apos;ll be back in{' '}
-        <span className="text-cyan-400 font-bold tabular-nums">{secondsLeft}s</span> ⏳
+        <span className="text-cyan-400 font-bold tabular-nums">
+          {secondsLeft >= 60
+            ? `${Math.ceil(secondsLeft / 60)}m`
+            : `${secondsLeft}s`}
+        </span> ⏳
       </p>
 
       {/* Countdown progress bar */}
@@ -209,15 +213,13 @@ export default function FloatingAIChat({
             exit={{ opacity: 0, scale: 0.85, y: 20 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             className="w-[calc(100vw-2rem)] max-w-sm sm:max-w-96 rounded-2xl overflow-hidden
-                       shadow-2xl shadow-black/50 border border-white/10 flex flex-col"
+                       shadow-2xl shadow-black/50 border border-white/10 flex flex-col
+                       max-h-[48dvh] sm:max-h-[calc(100dvh-5rem)]"
             style={{
               background: 'rgba(10, 13, 25, 0.97)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               transformOrigin: 'bottom right',
-              // Cap height so the panel never overflows the viewport on short phones.
-              // dvh accounts for mobile browser chrome (address bar, tab bar).
-              maxHeight: 'calc(100dvh - 5rem)',
             }}
           >
             {/* Header */}

@@ -14,7 +14,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 const STORAGE_KEY = 'chibu-portfolio-rl'
 export const MAX_QUESTIONS = 5
-const COOLDOWN_MS = 60_000 // 60-second cooldown after 5 questions
+const COOLDOWN_MS = 300_000 // 5-minute cooldown after 5 questions
 
 interface StoredState {
   sessionId: string

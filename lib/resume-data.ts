@@ -19,10 +19,10 @@ export const resumeData = {
   summary:
     'Senior Backend Engineer with 7+ years of experience architecting and scaling distributed, cloud-native systems on AWS and GCP. Expert in Node.js, TypeScript, and Golang with a strong track record building event-driven microservices, high-throughput data pipelines, and reliable infrastructure serving millions of users. Recently focused on LLM engineering, agentic systems, and retrieval-augmented generation (RAG), building production-ready AI applications with robust evaluation, observability, and vector search capabilities.',
   stats: [
-    { label: 'Years Experience', value: '7+' },
-    { label: 'Events / sec handled', value: '50K+' },
-    { label: 'Uptime maintained', value: '99.99%' },
-    { label: 'Monthly transactions', value: '$5M+' },
+    { label: 'Years Experience', value: '9+' },
+    { label: 'Years Backend Systems', value: '7' },
+    { label: 'Years on the Cloud', value: '3' },
+    { label: 'Year AI & LLMs', value: '1+' },
   ],
   skills: {
     'Languages & Frameworks': ['Node.js', 'TypeScript', 'Golang', 'JavaScript (ES6+)'],
