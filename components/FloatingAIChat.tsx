@@ -38,9 +38,9 @@ const SECTION_CONTEXT: Record<string, ContextEntry> = {
     label: 'Projects',
     color: '#a78bfa',
     questions: [
-      'What was the Event-Driven Framework for?',
-      'Tell me about his open source contributions',
-      "What's his most impactful project?",
+      'What is RAGBench and why did he build it?',
+      'Tell me about Clouddley and his role as CTO',
+      'How does i-human simulate human memory?',
     ],
   },
   contact: {
