@@ -4,6 +4,15 @@ import { useChat } from 'ai/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 import { Send, Bot, User, X, RotateCcw, MessageCircle, Sparkles } from 'lucide-react'
+import { type Message } from 'ai'
+
+const GREETING: Message = {
+  id: 'greeting',
+  role: 'assistant',
+  content:
+    "Hey! I'm Chibu's AI assistant — ask me anything about his background, projects, or experience. I'm grounded in real data so no hallucinations. What would you like to know?",
+  createdAt: new Date(),
+}
 import { useRateLimit, MAX_QUESTIONS } from '@/hooks/useRateLimit'
 import { resumeData } from '@/lib/resume-data'
 
@@ -146,6 +155,7 @@ export default function FloatingAIChat({
     useChat({
       api: '/api/ask',
       body: { section: activeSection },
+      initialMessages: [GREETING],
     })
 
   // Auto-scroll to latest message
@@ -226,10 +236,10 @@ export default function FloatingAIChat({
                     {questionsLeft}/{MAX_QUESTIONS} left
                   </span>
                 )}
-                {messages.length > 0 && (
+                {messages.length > 1 && (
                   <button
                     onClick={() => {
-                      setMessages([])
+                      setMessages([GREETING])
                       onClearPendingQuestion?.()
                       pendingHandled.current = false
                     }}
@@ -293,18 +303,6 @@ export default function FloatingAIChat({
               className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3"
               style={{ WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}
             >
-              {messages.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex flex-col items-center justify-center h-full gap-2 text-center"
-                >
-                  <Bot className="w-8 h-8 text-slate-700" />
-                  <p className="text-xs text-slate-600 leading-relaxed max-w-[220px]">
-                    Ask me anything about Chibuzor — background, projects, skills, or just say hi!
-                  </p>
-                </motion.div>
-              )}
 
               <AnimatePresence initial={false}>
                 {messages.map((message, idx) => (
@@ -414,6 +412,30 @@ export default function FloatingAIChat({
                 )}
               </AnimatePresence>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ---- "Chat with me" label — visible when panel is closed ---- */}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 12 }}
+            transition={{ duration: 0.2, delay: 0.1 }}
+            className="flex items-center self-end mb-1"
+          >
+            <button
+              onClick={onToggle}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium
+                         bg-gradient-to-r from-cyan-500/10 to-violet-500/10
+                         border border-white/10 text-slate-300 hover:text-white
+                         hover:border-cyan-400/30 transition-all duration-200 shadow-lg"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+              Chat with me
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

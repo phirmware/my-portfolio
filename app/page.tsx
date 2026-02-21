@@ -24,7 +24,7 @@ const SECTION_IDS = [
 ]
 
 export default function Home() {
-  const [aiOpen, setAiOpen] = useState(false)
+  const [aiOpen, setAiOpen] = useState(true)
   const [pendingQuestion, setPendingQuestion] = useState<string | undefined>()
 
   // Tracks the section currently most visible in the viewport —
