@@ -22,6 +22,22 @@ export const runtime = 'nodejs'
 
 const openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+// ---- Allowed origins ----
+// NEXT_PUBLIC_SITE_URL should be set in the Vercel dashboard (e.g. https://yoursite.com).
+// Same-origin browser requests don't send an Origin header, so we only block
+// requests that explicitly carry an Origin from an unknown domain.
+const ALLOWED_ORIGINS = [
+  process.env.NEXT_PUBLIC_SITE_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+].filter(Boolean) as string[]
+
+function isAllowedOrigin(req: Request): boolean {
+  const origin = req.headers.get('origin')
+  if (!origin) return true // same-origin browser requests omit the header
+  return ALLOWED_ORIGINS.includes(origin)
+}
+
 // ---- System prompt ----
 const SYSTEM_PROMPT = `
 You are Chibu's delightfully charming AI assistant on Chibuzor Ojukwu's portfolio website.
@@ -40,6 +56,13 @@ Important: Never fabricate specific numbers, companies, or dates not found in th
 `.trim()
 
 export async function POST(req: Request) {
+  if (!isAllowedOrigin(req)) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
+
   try {
     const body = await req.json()
     const messages: CoreMessage[] = body.messages
