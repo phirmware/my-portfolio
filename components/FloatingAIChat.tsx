@@ -13,6 +13,9 @@ const GREETING: Message = {
     "Hey! I'm Chibu's AI assistant — ask me anything about his background, projects, or experience. I'm grounded in real data so no hallucinations. What would you like to know?",
   createdAt: new Date(),
 }
+
+// 1 minute of inactivity after the last question → email notification fires
+const NOTIFY_DEBOUNCE_MS = 60_000
 import { useRateLimit, MAX_QUESTIONS } from '@/hooks/useRateLimit'
 import { resumeData } from '@/lib/resume-data'
 
@@ -150,6 +153,8 @@ export default function FloatingAIChat({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const pendingHandled = useRef(false)
+  const notifyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const lastSentCountRef = useRef(0)
 
   const { isBlocked, secondsLeft, questionsLeft, increment } = useRateLimit()
 
@@ -185,6 +190,41 @@ export default function FloatingAIChat({
   useEffect(() => {
     if (isOpen && !isBlocked) setTimeout(() => inputRef.current?.focus(), 350)
   }, [isOpen, isBlocked])
+
+  // Debounced email notification
+  // Fires 3 min after the last question. Timer resets on every new question.
+  // lastSentCountRef tracks how many questions were included in the last email,
+  // so follow-up emails only contain new questions — no duplicates.
+  useEffect(() => {
+    const userMessages = messages.filter(m => m.role === 'user')
+    if (userMessages.length <= lastSentCountRef.current) return
+
+    if (notifyTimerRef.current) clearTimeout(notifyTimerRef.current)
+
+    notifyTimerRef.current = setTimeout(async () => {
+      const newQuestions = userMessages
+        .slice(lastSentCountRef.current)
+        .map(m => (typeof m.content === 'string' ? m.content : ''))
+        .filter(Boolean)
+
+      if (newQuestions.length === 0) return
+      lastSentCountRef.current = userMessages.length
+
+      try {
+        await fetch('/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questions: newQuestions }),
+        })
+      } catch {
+        // Non-critical — silently ignore
+      }
+    }, NOTIFY_DEBOUNCE_MS)
+
+    return () => {
+      if (notifyTimerRef.current) clearTimeout(notifyTimerRef.current)
+    }
+  }, [messages])
 
   // Wrapped submit — checks rate limit before sending
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
