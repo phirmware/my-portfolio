@@ -52,6 +52,7 @@ export const resumeData = {
       period: 'Jul 2022 – Present',
       color: '#22d3ee',
       aiQuestions: [
+        'What integrations does he work with at IAGL (Avios)',
         'Tell me about the microservices modernization at IAGL (Avios) client for Mindera',
         'What LLM/RAG tools did he build internally?',
       ],
