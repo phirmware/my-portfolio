@@ -1,9 +1,9 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { useRef, useState } from 'react'
 import { resumeData } from '@/lib/resume-data'
-import { Calendar, MapPin, Briefcase, TrendingUp } from 'lucide-react'
+import { Calendar, MapPin, Briefcase, TrendingUp, MessageCircle } from 'lucide-react'
 
 function SectionHeader({ label, title }: { label: string; title: string }) {
   return (
@@ -39,9 +39,18 @@ function SkillPill({ skill, delay }: { skill: string; delay: number }) {
   )
 }
 
-function ExperienceCard({ job, index }: { job: (typeof resumeData.experience)[number]; index: number }) {
+function ExperienceCard({
+  job,
+  index,
+  onAskQuestion,
+}: {
+  job: (typeof resumeData.experience)[number]
+  index: number
+  onAskQuestion: (question: string, section: string) => void
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const inView = useInView(ref, { once: true, margin: '-80px' })
+  const [hovered, setHovered] = useState(false)
 
   return (
     <motion.div
@@ -51,6 +60,8 @@ function ExperienceCard({ job, index }: { job: (typeof resumeData.experience)[nu
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="relative pl-8 pb-8 last:pb-0"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       {/* Timeline line */}
       <div className="absolute left-[11px] top-6 bottom-0 w-px bg-gradient-to-b from-cyan-400/40 to-transparent last:hidden" />
@@ -66,7 +77,7 @@ function ExperienceCard({ job, index }: { job: (typeof resumeData.experience)[nu
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 mb-3">
           <div>
             <h3 className="font-bold text-slate-900 dark:text-white">{job.title}</h3>
-            <p className="text-sm text-cyan-500 dark:text-cyan-400 font-medium">{job.company}</p>
+            <p className="text-sm font-medium" style={{ color: job.color }}>{job.company}</p>
             <p className="text-xs text-slate-500 dark:text-slate-500 flex items-center gap-1 mt-0.5">
               <MapPin className="w-3 h-3" /> {job.location}
             </p>
@@ -75,16 +86,6 @@ function ExperienceCard({ job, index }: { job: (typeof resumeData.experience)[nu
             <Calendar className="w-3 h-3" /> {job.period}
           </span>
         </div>
-
-        {/* Top 3 highlights */}
-        <ul className="space-y-1.5 mb-3">
-          {job.highlights.slice(0, 3).map((h, i) => (
-            <li key={i} className="text-xs text-slate-500 dark:text-slate-400 flex gap-2">
-              <span className="text-cyan-400 mt-0.5 shrink-0">▸</span>
-              {h}
-            </li>
-          ))}
-        </ul>
 
         {/* Tech stack */}
         <div className="flex flex-wrap gap-1.5">
@@ -96,12 +97,48 @@ function ExperienceCard({ job, index }: { job: (typeof resumeData.experience)[nu
             </span>
           ))}
         </div>
+
+        {/* AI questions — slides in below on hover */}
+        <AnimatePresence>
+          {hovered && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="overflow-hidden"
+            >
+              <div className="pt-3 mt-3 border-t border-white/5 space-y-2">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <MessageCircle className="w-3.5 h-3.5" style={{ color: job.color }} />
+                  <span className="text-xs font-mono uppercase tracking-wider" style={{ color: job.color }}>
+                    Ask AI about this role
+                  </span>
+                </div>
+                {job.aiQuestions.map(q => (
+                  <motion.button
+                    key={q}
+                    onClick={() => onAskQuestion(q, `exp-${job.id}`)}
+                    className="w-full text-left px-3 py-2 rounded-lg text-xs
+                               bg-white/5 border border-white/10 text-slate-300
+                               hover:bg-white/10 hover:text-white transition-all duration-150"
+                    style={{ borderColor: `${job.color}20` }}
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <span style={{ color: job.color }} className="mr-1">›</span> {q}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   )
 }
 
-export default function About() {
+export default function About({ onAskQuestion }: { onAskQuestion: (question: string, section: string) => void }) {
   const skillsRef = useRef<HTMLDivElement>(null)
   const inView = useInView(skillsRef, { once: true, margin: '-100px' })
 
@@ -167,7 +204,7 @@ export default function About() {
         </div>
         <div className="space-y-2">
           {resumeData.experience.map((job, i) => (
-            <ExperienceCard key={job.id} job={job} index={i} />
+            <ExperienceCard key={job.id} job={job} index={i} onAskQuestion={onAskQuestion} />
           ))}
         </div>
       </div>

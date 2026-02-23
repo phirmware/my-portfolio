@@ -47,7 +47,7 @@ export default function Home() {
 
       <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-      <About />
+      <About onAskQuestion={handleAskQuestion} />
 
       <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 

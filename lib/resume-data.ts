@@ -58,9 +58,9 @@ export const resumeData = {
       highlights: [
         'Architected and led modernization of 5 monolithic services into event-driven TypeScript microservices using AWS Lambda and ECS, reducing deployment lead time from 4 hours to 45 minutes (70% improvement) and enabling zero-downtime partner onboarding',
         'Designed and implemented SNS/SQS-based event pipelines processing 50K+ events/sec with <100ms p99 latency, eliminating 90% data duplication across services and increasing async throughput by 50% while reducing infrastructure costs by $15K/month',
-        'Led infrastructure-as-code initiative migrating 100+ manual AWS resources to Terraform and Serverless Framework, achieving 100% environment reproducibility and zero configuration drift',
         'Built and deployed LLM-powered internal tools using RAG pipelines and vector databases, enabling semantic search and automated knowledge retrieval across internal documentation',
         'Established company-wide observability standards with Datadog APM, reducing incident detection by 80% and Mean Time to Resolution from 45 minutes to 18 minutes',
+        'Led infrastructure-as-code initiative migrating 100+ manual AWS resources to Terraform and Serverless Framework, achieving 100% environment reproducibility and zero configuration drift',
         'Designed disaster recovery strategy maintaining 99.99% uptime for critical financial services handling $5M+ transactions/month',
         'Optimized database queries and implemented Redis caching layer, reducing API response times from 800ms to 320ms (60% improvement)',
       ],
