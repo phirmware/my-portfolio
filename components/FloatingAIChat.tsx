@@ -15,7 +15,7 @@ const GREETING: Message = {
 }
 
 // 1 minute of inactivity after the last question → email notification fires
-const NOTIFY_DEBOUNCE_MS = 60_000
+const NOTIFY_DEBOUNCE_MS = 5_000
 import { useRateLimit, MAX_QUESTIONS } from '@/hooks/useRateLimit'
 import { resumeData } from '@/lib/resume-data'
 
@@ -192,7 +192,7 @@ export default function FloatingAIChat({
   }, [isOpen, isBlocked])
 
   // Debounced email notification
-  // Fires 3 min after the last question. Timer resets on every new question.
+  // Fires 5 seconds after the last question. Timer resets on every new question.
   // lastSentCountRef tracks how many questions were included in the last email,
   // so follow-up emails only contain new questions — no duplicates.
   useEffect(() => {
